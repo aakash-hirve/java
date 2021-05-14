@@ -1,5 +1,8 @@
 package com.akash.cowin.http;
 
+//import java.time.LocalDateTime;
+
+import com.akash.cowin.STATIC;
 import com.akash.cowin.common.Utilities;
 
 import io.vertx.core.Vertx;
@@ -30,6 +33,10 @@ public class HttpUtilities {
 		}
 		return webClient;
 	}
+	
+	public static WebClient fetchWebClient() {
+		return webClient;
+	}
 
 	/**
 	 * Initialize vertx webclient
@@ -53,51 +60,54 @@ public class HttpUtilities {
 	 * @param requestId
 	 * @param request
 	 */
-	public static void handleResponse(String requestId, HttpRequest<Buffer> request) {
+	public static void handleResponse(HttpRequest<Buffer> request) {
 		request.send(handler -> {
 			try {
 				int statusCode = handler.result().statusCode();
-				String statusMessage = handler.result().statusMessage();
+//				String statusMessage = handler.result().statusMessage();
+				
 				if (handler.succeeded()) {
-					System.out.println(requestId + " | get | Status code: " + statusCode);
-					System.out.println(requestId + " | get | Status message: " + statusMessage);
-
-					JsonObject inputJson = Utilities.readConfig(requestId);
-					String pollingObjectType = inputJson.getString("polling_object_type");
-
+//					System.out.println(STATIC.requestId + " | "+ LocalDateTime.now() +" | get | Status code: " + statusCode + ". Status message: " + statusMessage);
+					System.out.println(statusCode);
 					switch (statusCode) {
 
 					case 200:
 						JsonObject response;
 						
-						switch (pollingObjectType) {
+						switch (STATIC.getPollType()) {
 						case "available-slots-by-pin":
 							response = handler.result().bodyAsJsonObject();
 							// Call to generate email message
-							Utilities.generateEmailMessage(requestId, response.encode(), inputJson);
+							Utilities.generateEmailMessage(response.encode());
 							break;
 							
 						case "available-slots-by-district":
 							response = handler.result().bodyAsJsonObject();
 							// Call to generate email message
-							Utilities.generateEmailMessage(requestId, response.encode(), inputJson);							
+							Utilities.generateEmailMessage(response.encode());							
 					
+							break;
+							
+						case "schedule-appointment":
+							// Dont even try this ain't gonna work
+							response = handler.result().bodyAsJsonObject();
+							System.out.println(STATIC.requestId + " | handleResponse | Appointment schedule successfully! Nah man this ain't happening...");
 							break;
 
 						default:
 							response = handler.result().bodyAsJsonObject();
-							System.out.println(requestId + " | get | Status code: " + statusCode + ". Response: " + response);
+							System.out.println(STATIC.requestId + " | get | Status code: " + statusCode + ". Response: " + response);
 							break;
 						}
 						break;
 
 					default:
-						System.out.println(requestId + " | get | Response: " + handler.result().bodyAsString());
+						System.out.println(STATIC.requestId + " | get | Response: " + handler.result().bodyAsString());
 						break;
 					}
 
 				} else {
-					System.out.println(requestId + " | get | Failed with status code: " + statusCode + ". Cause: "+ handler.cause());
+					System.out.println(STATIC.requestId + " | get | Failed with status code: " + statusCode + ". Cause: "+ handler.cause());
 				}
 			} catch (Exception exception) {
 				exception.printStackTrace();

@@ -1,5 +1,7 @@
 package com.akash.cowin.redis;
 
+import com.akash.cowin.STATIC;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -15,9 +17,10 @@ public class RedisCache {
 	static int maxWaitInMillis = 2000;
 	static String host = "127.0.0.1";
 	static int port = 6379;
+	static int REDIS_DB = 1;
 	
 	private static Jedis jedis;
-
+	
 	private static JedisPool initRedisCache() {
 		try {
 			if (pool == null) {
@@ -25,11 +28,11 @@ public class RedisCache {
 				jedisConfig.setMaxTotal(maxActiveConnections);
 				jedisConfig.setMaxWaitMillis(maxWaitInMillis);
 				pool = new JedisPool(jedisConfig, host, port);
-
-				System.out.println("initRedisCache | Pool initialised successfully !");
+				
+				System.out.println(STATIC.requestId + "initRedisCache | Pool initialised successfully !");
 			}
 		} catch (Exception ex) {
-			System.out.println("initRedisCache | Exception : " + ex);
+			System.out.println(STATIC.requestId + "initRedisCache | Exception : " + ex);
 		}
 		return pool;
 	}
@@ -58,9 +61,11 @@ public class RedisCache {
 		return isExists;
 	}
 	
-//	public static void main(String args[]) {
-//		initRedisCache();
-//		setKey("test-id", "3");
-//		System.out.println(">>> "+keyExists("test-ids"));
-//	}
+	public static void setKey(String key, String value, int expiryTimeSeconds) {
+		System.out.println(STATIC.requestId + " | setKey | Saving "+key+" to redis with expiry "+expiryTimeSeconds+ " seconds...");
+		jedis.set(key, value);
+		jedis.expire(key, expiryTimeSeconds);
+		jedis.close();
+	}
+	
 }

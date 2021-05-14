@@ -17,6 +17,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import com.akash.cowin.STATIC;
+
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -75,8 +77,8 @@ public class EmailConfigs {
 		return session;
 	}
 
-	public static Session getEmailSession(JsonObject inputJson) {
-		return configureEmail(inputJson);
+	public static Session getEmailSession() {
+		return configureEmail(STATIC.configJson);
 	}
 
 	/**
@@ -84,31 +86,28 @@ public class EmailConfigs {
 	 * @param notificationMessage
 	 * @param inputJson
 	 */
-	public void sendEmail(String requestId, String notificationMessage, Session session, JsonObject inputJson) {
+	public void sendEmail(String notificationMessage, Session session) {
 		try {
 			
 			Runnable runnableTask = () -> {
 			    try {
-			    	System.out.println(requestId + " | sendEmail | Sending email...");
-					String notifyTo = inputJson.getJsonObject("email_settings").getString("recipient_emails");
+			    	System.out.println(STATIC.requestId + " | sendEmail | Sending email...");
+					String notifyTo = STATIC.configJson.getJsonObject("email_settings").getString("recipient_emails");
 					Message message = new MimeMessage(session);
 					message.setFrom(new InternetAddress("aakashhirve@gmail.com"));
-					message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(notifyTo));
-					message.setSubject("Cowin: Slot Availability Notification [" + Instant.now() + "]");
+					message.setRecipients(Message.RecipientType.BCC, InternetAddress.parse(notifyTo));
+					message.setSubject("Cowin: Slot Availability Notification [" + Instant.now().toString() + "]");
 
-					System.out.println(requestId + " | sendEmail | Generating mime multipart body...");
 					MimeBodyPart mimeBodyPart = new MimeBodyPart();
 					mimeBodyPart.setContent(notificationMessage, "text/html");
 
 					Multipart multipart = new MimeMultipart();
 					multipart.addBodyPart(mimeBodyPart);
-
-					System.out.println(requestId + " | sendEmail | Message content being set...");
 					message.setContent(multipart);
 			    	
-			    	System.out.println(requestId + " | sendEmail | Sending message...");
+			    	System.out.println(STATIC.requestId + " | sendEmail | Sending message...");
 			    	Transport.send(message);
-			    	System.out.println(requestId + " | sendEmail | Email notification sent!");
+			    	System.out.println(STATIC.requestId + " | sendEmail | Email notification sent!");
 			    	
 			    } catch (MessagingException me) {
 					me.printStackTrace();
