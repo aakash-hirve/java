@@ -1,4 +1,4 @@
-# Cowin Available Slot Notifier
+# Cowin Slot Notifier
 This project is created with the intention of easing the process of getting email notifications for available COVID vaccination slots across India.
 
 ## Pre-requisites
